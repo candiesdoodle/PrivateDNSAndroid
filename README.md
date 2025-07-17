@@ -9,6 +9,22 @@ a single tap.
 
 ![Private DNS app screenshot](readme.jpg)
 
+# Wifi based trigger
+Requires extensive permissions:
+    
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+
+Targets SDK 29 to allow for enlisting Wifi SSIDs
+
+<img width="411" height="884" alt="image" src="https://github.com/user-attachments/assets/b4392020-54f7-4a8d-a34f-88838f19b1e6" />
+
+
 ## Installation
 Get the latest apk on the [releases page](https://github.com/karasevm/PrivateDNSAndroid/releases/latest) 
 or from [IzzyOnDroid repo](https://apt.izzysoft.de/fdroid/index/apk/ru.karasevm.privatednstoggle).
