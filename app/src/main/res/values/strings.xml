@@ -52,4 +52,20 @@
     <string name="shizuku_failure_toast">Failed to acquire permission, please grant it manually</string>
     <string name="shortcut_do_cycle">Next server/mode</string>
     <string name="shortcut_switch_mode">Switch mode</string>
+    <string name="wifi_settings_title">Wi-Fi Settings</string>
+    <string name="no_wifi_configs">No Wi-Fi configurations added</string>
+    <string name="add_wifi_config">Add Wi-Fi Configuration</string>
+    <string name="wifi_ssid_hint">Wi-Fi SSID</string>
+    <string name="on_connect_action">On Connect Action</string>
+    <string name="on_disconnect_action">On Disconnect Action</string>
+    <string name="action_off">Off</string>
+    <string name="action_auto">Auto</string>
+    <string name="action_private_dns_server">Private DNS Server</string>
+    <string name="select_dns_server">Select DNS Server</string>
+    <string name="save_wifi_config">Save Wi-Fi Configuration</string>
+    <string name="edit_wifi_config">Edit Wi-Fi Configuration</string>
+    <string name="delete_wifi_config">Delete Wi-Fi Configuration</string>
+    <string name="delete_wifi_config_message">Are you sure you want to delete this Wi-Fi configuration?</string>
+    <string name="wifi_config_ssid_empty_error">Wi-Fi SSID cannot be empty</string>
+    <string name="delete_wifi_config_title">Delete Wi-Fi Configuration</string>
 </resources>

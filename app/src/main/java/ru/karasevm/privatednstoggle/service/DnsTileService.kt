@@ -28,7 +28,7 @@ import ru.karasevm.privatednstoggle.util.PrivateDNSUtils.checkForPermission
 
 class DnsTileService : TileService() {
 
-    private val repository: DnsServerRepository by lazy { (application as PrivateDNSApp).repository }
+    private val dnsServerRepository: DnsServerRepository by lazy { (application as PrivateDNSApp).dnsServerRepository }
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
     private val sharedPreferences by lazy { PreferenceHelper.defaultPreference(this) }
@@ -48,7 +48,7 @@ class DnsTileService : TileService() {
      *  Set's the state of the tile and system settings to the next state
      */
     private fun cycleState() {
-        PrivateDNSUtils.getNextProvider(sharedPreferences, scope, repository, contentResolver, onNext = { mode, provider ->
+        PrivateDNSUtils.getNextProvider(sharedPreferences, scope, dnsServerRepository, contentResolver, onNext = { mode, provider ->
             changeDNSServer(mode, provider)
         })
     }
@@ -87,7 +87,7 @@ class DnsTileService : TileService() {
                     if (dnsProvider == null) {
                         return@launch
                     }
-                    val dnsServer = repository.getFirstByServer( dnsProvider)
+                    val dnsServer = dnsServerRepository.getFirstByServer( dnsProvider)
                     if (dnsServer != null) {
                         changeTileState(
                             qsTile,
@@ -149,7 +149,7 @@ class DnsTileService : TileService() {
                 scope.launch {
                     val activeAddress =
                         Settings.Global.getString(contentResolver, "private_dns_specifier")
-                    val dnsServer = repository.getFirstByServer(activeAddress)
+                    val dnsServer = dnsServerRepository.getFirstByServer(activeAddress)
                     setTile(
                         qsTile,
                         if (!isPermissionGranted) Tile.STATE_UNAVAILABLE else Tile.STATE_ACTIVE,

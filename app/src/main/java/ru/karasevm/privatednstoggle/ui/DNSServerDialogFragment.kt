@@ -27,7 +27,7 @@ class DNSServerDialogFragment : DialogFragment() {
     private lateinit var linearLayoutManager: LinearLayoutManager
     private lateinit var adapter: ServerListRecyclerAdapter
     private var servers: MutableList<DnsServer> = mutableListOf()
-    private val dnsServerViewModel: DnsServerViewModel by viewModels { DnsServerViewModelFactory((requireActivity().application as PrivateDNSApp).repository) }
+    private val dnsServerViewModel: DnsServerViewModel by viewModels { DnsServerViewModelFactory((requireActivity().application as PrivateDNSApp).dnsServerRepository) }
     private val contentResolver by lazy { requireActivity().contentResolver }
 
     override fun onCreateDialog(

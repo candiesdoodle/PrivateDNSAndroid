@@ -4,12 +4,14 @@ import android.app.Application
 import android.os.StrictMode
 import com.google.android.material.color.DynamicColors
 import ru.karasevm.privatednstoggle.data.DnsServerRepository
+import ru.karasevm.privatednstoggle.data.WifiConfigRepository
 import ru.karasevm.privatednstoggle.data.database.DnsServerRoomDatabase
 
 class PrivateDNSApp : Application() {
 
     private val database by lazy { DnsServerRoomDatabase.getDatabase(this) }
-    val repository by lazy { DnsServerRepository(database.dnsServerDao()) }
+    val dnsServerRepository: DnsServerRepository by lazy { DnsServerRepository(database.dnsServerDao()) }
+    val wifiConfigRepository: WifiConfigRepository by lazy { WifiConfigRepository(database.wifiConfigDao()) }
 
     override fun onCreate() {
         super.onCreate()

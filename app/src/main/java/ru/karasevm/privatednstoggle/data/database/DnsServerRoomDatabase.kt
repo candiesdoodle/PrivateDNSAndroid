@@ -6,11 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import ru.karasevm.privatednstoggle.data.DnsServerDao
 import ru.karasevm.privatednstoggle.model.DnsServer
+import ru.karasevm.privatednstoggle.model.WifiConfig
 
-@Database(entities = [DnsServer::class], version = 1, exportSchema = false)
+@Database(entities = [DnsServer::class, WifiConfig::class], version = 2, exportSchema = false)
 abstract class DnsServerRoomDatabase : RoomDatabase() {
 
     abstract fun dnsServerDao(): DnsServerDao
+    abstract fun wifiConfigDao(): WifiConfigDao
 
     companion object {
         @Volatile

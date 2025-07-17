@@ -55,4 +55,12 @@ object PreferenceHelper {
                 it.put(REQUIRE_UNLOCK to value)
             }
         }
+
+    var SharedPreferences.lastConnectedWifiSsid
+        get() = getString("last_connected_wifi_ssid", null)
+        set(value) {
+            editMe {
+                it.put("last_connected_wifi_ssid" to (value ?: ""))
+            }
+        }
 }

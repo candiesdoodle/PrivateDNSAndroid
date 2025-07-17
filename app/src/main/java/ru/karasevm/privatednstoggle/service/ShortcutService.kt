@@ -14,7 +14,7 @@ import ru.karasevm.privatednstoggle.util.PrivateDNSUtils
 
 class ShortcutService : Service() {
 
-    private val repository: DnsServerRepository by lazy { (application as PrivateDNSApp).repository }
+    private val dnsServerRepository: DnsServerRepository by lazy { (application as PrivateDNSApp).dnsServerRepository }
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
@@ -62,7 +62,7 @@ class ShortcutService : Service() {
                     PrivateDNSUtils.getNextProvider(
                         sharedPreferences,
                         scope,
-                        repository,
+                        dnsServerRepository,
                         contentResolver,
                         onNext = { dnsMode, dnsProvider ->
                             setDnsMode(dnsMode, dnsProvider)
@@ -73,7 +73,7 @@ class ShortcutService : Service() {
                     PrivateDNSUtils.getNextMode(
                         sharedPreferences,
                         scope,
-                        repository,
+                        dnsServerRepository,
                         contentResolver,
                         onNext = { dnsMode, dnsProvider ->
                             setDnsMode(dnsMode, dnsProvider)
