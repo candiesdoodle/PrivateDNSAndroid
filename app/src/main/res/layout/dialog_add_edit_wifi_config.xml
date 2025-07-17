@@ -7,20 +7,33 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/ssidInputLayout"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/wifi_ssid_hint"
+        android:textStyle="bold" />
+
+    <Spinner
+        android:id="@+id/ssidSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/wifi_ssid_hint"
-        app:endIconMode="clear_text">
+        android:layout_marginTop="8dp"
+        android:minHeight="48dp" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/ssidEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textNoSuggestions" />
+    <ProgressBar
+        android:id="@+id/ssidProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+    <TextView
+        android:id="@+id/ssidErrorTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/no_ssids_found"
+        android:textColor="@android:color/holo_red_dark"
+        android:visibility="gone" />
 
     <TextView
         android:layout_width="wrap_content"

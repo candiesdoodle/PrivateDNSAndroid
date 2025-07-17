@@ -70,4 +70,5 @@
     <string name="delete_wifi_config_title">Delete Wi-Fi Configuration</string>
     <string name="enable_wifi_logic">Enable Wi-Fi based Private DNS trigger</string>
     <string name="wifi_logic_description">This will affect only subsequent changes and not impact currently set Private DNS server.</string>
+    <string name="no_ssids_found">No saved Wi-Fi networks found or all are already configured.</string>
 </resources>

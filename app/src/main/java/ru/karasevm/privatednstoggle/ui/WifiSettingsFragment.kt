@@ -1,5 +1,6 @@
 package ru.karasevm.privatednstoggle.ui
 
+import AddEditWifiConfigDialogFragment
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View

@@ -8,7 +8,7 @@ plugins {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = 35
     androidResources {
         generateLocaleConfig = true
     }
@@ -18,7 +18,7 @@ android {
         versionName = "1.10.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        targetSdk = 36
+        targetSdk = 28
         minSdk = 28
     }
     buildFeatures {
