@@ -25,6 +25,7 @@ import ru.karasevm.privatednstoggle.data.DnsServerRepository
 import ru.karasevm.privatednstoggle.data.WifiConfigRepository
 import ru.karasevm.privatednstoggle.model.WifiAction
 import ru.karasevm.privatednstoggle.util.PreferenceHelper
+import ru.karasevm.privatednstoggle.util.PreferenceHelper.wifiLogicEnabled
 import ru.karasevm.privatednstoggle.util.PrivateDNSUtils
 
 class WifiMonitorService : Service() {
@@ -84,26 +85,46 @@ class WifiMonitorService : Service() {
     private fun handleWifiConnection(ssid: String) {
         Log.d(TAG, "Connected to Wi-Fi: $ssid")
         sharedPreferences.edit().putString("last_connected_wifi_ssid", ssid).apply()
+
+        if (!sharedPreferences.wifiLogicEnabled) {
+            Log.d(TAG, "Global Wi-Fi logic is disabled. Skipping DNS action.")
+            return
+        }
+
         scope.launch {
             val wifiConfig = wifiConfigRepository.getBySsid(ssid)
             wifiConfig?.let { config ->
-                Log.d(TAG, "Applying onConnectAction for SSID: ${config.ssid}")
-                applyDnsAction(applicationContext, dnsServerRepository, config.onConnectAction)
+                if (config.enabled) {
+                    Log.d(TAG, "Applying onConnectAction for SSID: ${config.ssid}")
+                    applyDnsAction(applicationContext, dnsServerRepository, config.onConnectAction)
+                } else {
+                    Log.d(TAG, "Wi-Fi config for ${config.ssid} is disabled. Skipping DNS action.")
+                }
             }
         }
     }
 
     private fun handleWifiDisconnection() {
         Log.d(TAG, "Disconnected from the tracked Wi-Fi network")
+
+        if (!sharedPreferences.wifiLogicEnabled) {
+            Log.d(TAG, "Global Wi-Fi logic is disabled. Skipping DNS action.")
+            return
+        }
+
         scope.launch {
             val lastSsid = sharedPreferences.getString("last_connected_wifi_ssid", null)
             if (!lastSsid.isNullOrEmpty()) {
                 val wifiConfig = wifiConfigRepository.getBySsid(lastSsid)
                 wifiConfig?.let { config ->
-                    Log.d(TAG, "Applying onDisconnectAction for SSID: ${config.ssid}")
-                    applyDnsAction(applicationContext, dnsServerRepository, config.onDisconnectAction)
+                    if (config.enabled) {
+                        Log.d(TAG, "Applying onDisconnectAction for SSID: ${config.ssid}")
+                        applyDnsAction(applicationContext, dnsServerRepository, config.onDisconnectAction)
+                    } else {
+                        Log.d(TAG, "Wi-Fi config for ${config.ssid} is disabled. Skipping DNS action.")
+                    }
+                    sharedPreferences.edit().remove("last_connected_wifi_ssid").apply()
                 }
-                sharedPreferences.edit().remove("last_connected_wifi_ssid").apply()
             }
         }
     }

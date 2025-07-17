@@ -17,6 +17,8 @@ import ru.karasevm.privatednstoggle.data.WifiConfigViewModelFactory
 import ru.karasevm.privatednstoggle.databinding.FragmentWifiSettingsBinding
 import ru.karasevm.privatednstoggle.model.WifiConfig
 
+import ru.karasevm.privatednstoggle.util.PreferenceHelper
+
 class WifiSettingsFragment : Fragment(), AddEditWifiConfigDialogFragment.NoticeDialogListener {
 
     private var _binding: FragmentWifiSettingsBinding? = null
@@ -44,6 +46,12 @@ class WifiSettingsFragment : Fragment(), AddEditWifiConfigDialogFragment.NoticeD
 
         binding.topAppBar.title = getString(R.string.wifi_settings_title)
 
+        val sharedPreferences = PreferenceHelper.defaultPreference(requireContext())
+        binding.globalWifiToggle.isChecked = sharedPreferences.getBoolean("wifi_logic_enabled", true)
+        binding.globalWifiToggle.setOnCheckedChangeListener { _, isChecked ->
+            sharedPreferences.edit().putBoolean("wifi_logic_enabled", isChecked).apply()
+        }
+
         val linearLayoutManager = LinearLayoutManager(context)
         binding.recyclerView.layoutManager = linearLayoutManager
 
@@ -54,6 +62,8 @@ class WifiSettingsFragment : Fragment(), AddEditWifiConfigDialogFragment.NoticeD
             newFragment.show(childFragmentManager, "edit_wifi_config")
         }, { wifiConfig ->
             showDeleteConfirmationDialog(wifiConfig)
+        }, { wifiConfig, isEnabled ->
+            wifiConfigViewModel.update(wifiConfig.copy(enabled = isEnabled))
         })
         binding.recyclerView.adapter = adapter
 

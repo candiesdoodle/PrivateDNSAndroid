@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.materialswitch.MaterialSwitch
 import ru.karasevm.privatednstoggle.R
 import ru.karasevm.privatednstoggle.model.DnsServer
 import ru.karasevm.privatednstoggle.model.WifiConfig
@@ -17,7 +18,8 @@ class WifiConfigRecyclerAdapter(
     private var dnsServers: Map<Int, DnsServer>,
     private val onItemClick: (WifiConfig) -> Unit,
     private val onEditClick: (WifiConfig) -> Unit,
-    private val onDeleteClick: (WifiConfig) -> Unit
+    private val onDeleteClick: (WifiConfig) -> Unit,
+    private val onToggleEnabled: (WifiConfig, Boolean) -> Unit
 ) :
     ListAdapter<WifiConfig, WifiConfigRecyclerAdapter.WifiConfigViewHolder>(WifiConfigDiffCallback()) {
 
@@ -43,6 +45,7 @@ class WifiConfigRecyclerAdapter(
         private val onDisconnectActionTextView: TextView = itemView.findViewById(R.id.onDisconnectActionTextView)
         private val editButton: ImageButton = itemView.findViewById(R.id.editButton)
         private val deleteButton: ImageButton = itemView.findViewById(R.id.deleteButton)
+        private val wifiConfigEnabledSwitch: MaterialSwitch = itemView.findViewById(R.id.wifiConfigEnabledSwitch)
 
         init {
             itemView.setOnClickListener {
@@ -54,16 +57,23 @@ class WifiConfigRecyclerAdapter(
             deleteButton.setOnClickListener {
                 onDeleteClick(getItem(bindingAdapterPosition))
             }
+            wifiConfigEnabledSwitch.setOnCheckedChangeListener { _, isChecked ->
+                val currentConfig = getItem(bindingAdapterPosition)
+                if (currentConfig.enabled != isChecked) {
+                    this@WifiConfigRecyclerAdapter.onToggleEnabled(currentConfig, isChecked)
+                }
+            }
         }
 
         fun bind(wifiConfig: WifiConfig) {
             ssidTextView.text = wifiConfig.ssid
+            wifiConfigEnabledSwitch.isChecked = wifiConfig.enabled
 
             // Display onConnectAction
-            onConnectActionTextView.text = getActionText(wifiConfig.onConnectAction)
+            onConnectActionTextView.text = "On Connect: " + getActionText(wifiConfig.onConnectAction)
 
             // Display onDisconnectAction
-            onDisconnectActionTextView.text = getActionText(wifiConfig.onDisconnectAction)
+            onDisconnectActionTextView.text = "On Disconnect: " + getActionText(wifiConfig.onDisconnectAction)
         }
 
         private fun getActionText(action: ru.karasevm.privatednstoggle.model.WifiAction): String {

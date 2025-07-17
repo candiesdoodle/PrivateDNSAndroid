@@ -63,4 +63,12 @@ object PreferenceHelper {
                 it.put("last_connected_wifi_ssid" to (value ?: ""))
             }
         }
+
+    var SharedPreferences.wifiLogicEnabled
+        get() = getBoolean("wifi_logic_enabled", true)
+        set(value) {
+            editMe {
+                it.put("wifi_logic_enabled" to value)
+            }
+        }
 }
