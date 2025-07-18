@@ -9,11 +9,8 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,12 +38,17 @@ class WifiMonitorService : Service() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == WifiManager.NETWORK_STATE_CHANGED_ACTION) {
                 val networkInfo = intent.getParcelableExtra<android.net.NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)
+                val lastSsid = sharedPreferences.getString("last_connected_wifi_ssid", null)
+
                 if (networkInfo?.isConnected == true) {
-                    val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                    val ssid = wifiManager.connectionInfo.ssid.replace("\"", "")
-                    handleWifiConnection(ssid)
+                    val wifiManager =
+                        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                    val newSsid = wifiManager.connectionInfo.ssid.replace("\"", "")
+                    if (lastSsid != newSsid) {
+                        handleWifiChange(lastSsid, newSsid)
+                    }
                 } else {
-                    handleWifiDisconnection()
+                    handleWifiChange(lastSsid, null)
                 }
             }
         }
@@ -82,9 +84,8 @@ class WifiMonitorService : Service() {
         return null
     }
 
-    private fun handleWifiConnection(ssid: String) {
-        Log.d(TAG, "Connected to Wi-Fi: $ssid")
-        sharedPreferences.edit().putString("last_connected_wifi_ssid", ssid).apply()
+    private fun handleWifiChange(lastSsid: String?, newSsid: String?) {
+        Log.d(TAG, "handleWifiChange called with lastSsid: $lastSsid, newSsid: $newSsid")
 
         if (!sharedPreferences.wifiLogicEnabled) {
             Log.d(TAG, "Global Wi-Fi logic is disabled. Skipping DNS action.")
@@ -92,38 +93,30 @@ class WifiMonitorService : Service() {
         }
 
         scope.launch {
-            val wifiConfig = wifiConfigRepository.getBySsid(ssid)
-            wifiConfig?.let { config ->
-                if (config.enabled) {
-                    Log.d(TAG, "Applying onConnectAction for SSID: ${config.ssid}")
-                    applyDnsAction(applicationContext, dnsServerRepository, config.onConnectAction)
-                } else {
-                    Log.d(TAG, "Wi-Fi config for ${config.ssid} is disabled. Skipping DNS action.")
+            var newConnectionActionApplied = false
+            // Prioritize new connection action
+            if (newSsid != null) {
+                val newWifiConfig = wifiConfigRepository.getBySsid(newSsid)
+                if (newWifiConfig?.enabled == true) {
+                    Log.d(TAG, "Applying onConnectAction for new SSID: ${newWifiConfig.ssid}")
+                    applyDnsAction(applicationContext, dnsServerRepository, newWifiConfig.onConnectAction)
+                    newConnectionActionApplied = true
                 }
+                sharedPreferences.edit().putString("last_connected_wifi_ssid", newSsid).apply()
+            } else {
+                sharedPreferences.edit().remove("last_connected_wifi_ssid").apply()
             }
-        }
-    }
 
-    private fun handleWifiDisconnection() {
-        Log.d(TAG, "Disconnected from the tracked Wi-Fi network")
-
-        if (!sharedPreferences.wifiLogicEnabled) {
-            Log.d(TAG, "Global Wi-Fi logic is disabled. Skipping DNS action.")
-            return
-        }
-
-        scope.launch {
-            val lastSsid = sharedPreferences.getString("last_connected_wifi_ssid", null)
-            if (!lastSsid.isNullOrEmpty()) {
-                val wifiConfig = wifiConfigRepository.getBySsid(lastSsid)
-                wifiConfig?.let { config ->
-                    if (config.enabled) {
-                        Log.d(TAG, "Applying onDisconnectAction for SSID: ${config.ssid}")
-                        applyDnsAction(applicationContext, dnsServerRepository, config.onDisconnectAction)
-                    } else {
-                        Log.d(TAG, "Wi-Fi config for ${config.ssid} is disabled. Skipping DNS action.")
-                    }
-                    sharedPreferences.edit().remove("last_connected_wifi_ssid").apply()
+            // Handle disconnection if no connect action was prioritized
+            if (!newConnectionActionApplied && lastSsid != null) {
+                val lastWifiConfig = wifiConfigRepository.getBySsid(lastSsid)
+                if (lastWifiConfig?.enabled == true) {
+                    Log.d(TAG, "Applying onDisconnectAction for last SSID: ${lastWifiConfig.ssid}")
+                    applyDnsAction(
+                        applicationContext,
+                        dnsServerRepository,
+                        lastWifiConfig.onDisconnectAction
+                    )
                 }
             }
         }
