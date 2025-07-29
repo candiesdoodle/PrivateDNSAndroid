@@ -28,8 +28,8 @@ Targets SDK 29 to allow for enlisting Wifi SSIDs
 
 
 ## Installation
-Get the latest apk on the [releases page](https://github.com/karasevm/PrivateDNSAndroid/releases/latest) 
-or from [IzzyOnDroid repo](https://apt.izzysoft.de/fdroid/index/apk/ru.karasevm.privatednstoggle).
+This repository contains custom features. To use this version, you will need to compile the application from source.
+For the original version without these features, please refer to the parent GitHub repository: [https://github.com/karasevm/PrivateDNSAndroid](https://github.com/karasevm/PrivateDNSAndroid)
 
 ### Automatic (Shizuku)
 1. Install and start [Shizuku](https://shizuku.rikka.app/).
