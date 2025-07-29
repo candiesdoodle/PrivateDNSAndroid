@@ -123,16 +123,21 @@ class WifiMonitorService : Service() {
     }
 
     private suspend fun applyDnsAction(context: Context, dnsServerRepository: DnsServerRepository, action: WifiAction) {
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationId = System.currentTimeMillis().toInt() // Unique ID for each notification
+
         when (action.type) {
             ru.karasevm.privatednstoggle.model.WifiActionType.OFF -> {
                 PrivateDNSUtils.setPrivateMode(context.contentResolver, PrivateDNSUtils.DNS_MODE_OFF)
                 PrivateDNSUtils.setPrivateProvider(context.contentResolver, null)
                 Log.d(TAG, "DNS set to Off")
+                showSilentNotification(notificationManager, notificationId, "DNS set to Off")
             }
             ru.karasevm.privatednstoggle.model.WifiActionType.AUTO -> {
                 PrivateDNSUtils.setPrivateMode(context.contentResolver, PrivateDNSUtils.DNS_MODE_AUTO)
                 PrivateDNSUtils.setPrivateProvider(context.contentResolver, null)
                 Log.d(TAG, "DNS set to Auto")
+                showSilentNotification(notificationManager, notificationId, "DNS set to Auto")
             }
             ru.karasevm.privatednstoggle.model.WifiActionType.PRIVATE_DNS_SERVER -> {
                 action.dnsServerId?.let { id ->
@@ -141,9 +146,29 @@ class WifiMonitorService : Service() {
                         PrivateDNSUtils.setPrivateMode(context.contentResolver, PrivateDNSUtils.DNS_MODE_PRIVATE)
                         PrivateDNSUtils.setPrivateProvider(context.contentResolver, server)
                         Log.d(TAG, "DNS set to Private Provider: $server")
+                        showSilentNotification(notificationManager, notificationId, "DNS set to Private Provider: $server")
                     } ?: Log.e(TAG, "DNS server not found for ID: $id")
                 } ?: Log.e(TAG, "DNS server ID is null for PRIVATE_DNS_SERVER action")
             }
+        }
+    }
+
+    private fun showSilentNotification(notificationManager: NotificationManager, notificationId: Int, contentText: String) {
+        val notification = NotificationCompat.Builder(this, SILENT_CHANNEL_ID)
+            .setContentTitle("DNS Change")
+            .setContentText(contentText)
+            .setSmallIcon(R.drawable.ic_private_black_24dp)
+            .setSilent(true) // Make it a silent notification
+            .setOngoing(false) // Allow it to be dismissed
+            .setAutoCancel(true) // Dismiss when tapped
+            .build()
+
+        notificationManager.notify(notificationId, notification)
+
+        // Schedule cancellation after 5 seconds
+        scope.launch {
+            kotlinx.coroutines.delay(5000)
+            notificationManager.cancel(notificationId)
         }
     }
 
@@ -154,13 +179,24 @@ class WifiMonitorService : Service() {
                 "Wi-Fi Monitor Service Channel",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
+            val silentChannel = NotificationChannel(
+                SILENT_CHANNEL_ID,
+                "Silent DNS Change Notifications",
+                NotificationManager.IMPORTANCE_LOW // Low importance for silent notifications
+            ).apply {
+                setSound(null, null) // No sound
+                enableVibration(false) // No vibration
+                setShowBadge(false) // No badge
+            }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(serviceChannel)
+            manager.createNotificationChannel(silentChannel)
         }
     }
 
     companion object {
         private const val TAG = "WifiMonitorService"
         private const val CHANNEL_ID = "WifiMonitorServiceChannel"
+        private const val SILENT_CHANNEL_ID = "SilentDnsChangeChannel"
     }
 }

@@ -72,3 +72,4 @@ fastlane/readme.md
 .kotlin/
 
 *~
+app/src/main/java/ru/karasevm/privatednstoggle/service/WifiMonitorService.bak

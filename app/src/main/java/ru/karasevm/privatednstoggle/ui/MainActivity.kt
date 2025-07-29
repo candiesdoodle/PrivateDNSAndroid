@@ -20,6 +20,10 @@ import ru.karasevm.privatednstoggle.service.WifiMonitorService
 import ru.karasevm.privatednstoggle.util.ShizukuUtil.grantPermissionWithShizuku
 
 
+import android.net.Uri
+import android.provider.Settings
+import androidx.appcompat.app.AlertDialog
+
 class MainActivity : AppCompatActivity(), Shizuku.OnRequestPermissionResultListener,
     AddServerDialogFragment.NoticeDialogListener {
 
@@ -29,11 +33,21 @@ class MainActivity : AppCompatActivity(), Shizuku.OnRequestPermissionResultListe
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Permission granted, proceed with Wi-Fi related operations
-            Toast.makeText(this, "Location permission granted", Toast.LENGTH_SHORT).show()
+            // Permission granted, now check for background location
+            checkBackgroundLocationPermission()
         } else {
             // Permission denied, inform the user
             Toast.makeText(this, "Location permission denied. Wi-Fi features may not work.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private val requestBackgroundLocationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Toast.makeText(this, "Background location permission granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Background location permission denied. Wi-Fi features may not work reliably in background.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -121,6 +135,9 @@ class MainActivity : AppCompatActivity(), Shizuku.OnRequestPermissionResultListe
         // Request ACCESS_FINE_LOCATION permission
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            // If fine location is already granted, check for background location
+            checkBackgroundLocationPermission()
         }
 
         // Request POST_NOTIFICATIONS permission
@@ -165,6 +182,32 @@ class MainActivity : AppCompatActivity(), Shizuku.OnRequestPermissionResultListe
                 }
             }
         }
+    }
+
+    private fun checkBackgroundLocationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Explain to the user why we need background location
+                AlertDialog.Builder(this)
+                    .setTitle("Background Location Permission")
+                    .setMessage("For continuous Wi-Fi monitoring and DNS changes, this app needs 'Allow all the time' location access. Please grant this in app settings.")
+                    .setPositiveButton("Go to Settings") { dialog, which ->
+                        openAppSettings()
+                    }
+                    .setNegativeButton("Cancel") { dialog, which ->
+                        // User declined, Wi-Fi features might not work reliably
+                        Toast.makeText(this, "Background location not granted. Wi-Fi features may not work reliably.", Toast.LENGTH_LONG).show()
+                    }
+                    .show()
+            }
+        }
+    }
+
+    private fun openAppSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
     }
 
     override fun onDestroy() {
